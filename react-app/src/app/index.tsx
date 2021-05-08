@@ -8,15 +8,16 @@
 
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Switch, Route, BrowserRouter } from 'react-router-dom';
+import { Switch, BrowserRouter } from 'react-router-dom';
 
 import { GlobalStyle } from 'styles/global-styles';
 
+import { Login } from './pages/Login/Loadable';
 import { HomePage } from './pages/HomePage/Loadable';
 import { NotFoundPage } from './components/NotFoundPage/Loadable';
 import { useTranslation } from 'react-i18next';
 
-import BeforeRenderRoute from 'utils/beforeRenderRoute';
+import BeforeRenderRoute from 'utils/BeforeRenderRoute';
 
 export function App() {
   const { i18n } = useTranslation();
@@ -33,6 +34,12 @@ export function App() {
       <Switch>
         <BeforeRenderRoute
           exact={true}
+          path="/login"
+          component={Login}
+          requiresAuth={false}
+        />
+        <BeforeRenderRoute
+          exact={true}
           path="/"
           component={HomePage}
           requiresAuth={true}
@@ -42,7 +49,6 @@ export function App() {
           component={NotFoundPage}
           requiresAuth={false}
         />
-        <Route component={NotFoundPage} />
       </Switch>
       <GlobalStyle />
     </BrowserRouter>
