@@ -26,8 +26,8 @@ const gapiInit = callback => {
     const SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly';
     window.gapi.client
       .init({
-        apiKey: process.env.GOOGLE_AUTH_API_KEY,
-        clientId: process.env.GOOGLE_AUTH_CLIENT_ID,
+        apiKey: process.env.REACT_APP_GOOGLE_AUTH_API_KEY,
+        clientId: process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID,
         discoveryDocs: DISCOVERY_DOCS,
         scope: SCOPES,
       })
