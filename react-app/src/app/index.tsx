@@ -16,6 +16,8 @@ import { HomePage } from './pages/HomePage/Loadable';
 import { NotFoundPage } from './components/NotFoundPage/Loadable';
 import { useTranslation } from 'react-i18next';
 
+import BeforeRenderRoute from 'utils/beforeRenderRoute';
+
 export function App() {
   const { i18n } = useTranslation();
   return (
@@ -29,7 +31,17 @@ export function App() {
       </Helmet>
 
       <Switch>
-        <Route exact path="/" component={HomePage} />
+        <BeforeRenderRoute
+          exact={true}
+          path="/"
+          component={HomePage}
+          requiresAuth={true}
+        />
+        <BeforeRenderRoute
+          exact={true}
+          component={NotFoundPage}
+          requiresAuth={false}
+        />
         <Route component={NotFoundPage} />
       </Switch>
       <GlobalStyle />
