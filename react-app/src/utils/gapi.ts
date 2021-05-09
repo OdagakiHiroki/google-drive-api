@@ -1,3 +1,11 @@
+type RequestParam = {
+  path: string; // The URL to handle the request.
+  method?: string; // The HTTP request method to use. Default is GET.
+  params?: object; // URL params in key-value pair form.
+  headers?: object; // Additional HTTP request headers.
+  body?: string | object; // The HTTP request body (applies to PUT or POST).
+};
+
 // TODO: リファクタする
 const loadGapi = () => {
   return new Promise((resolve, reject) => {
@@ -23,7 +31,7 @@ const gapiInit = callback => {
     const DISCOVERY_DOCS = [
       'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
     ];
-    const SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly';
+    const SCOPES = 'https://www.googleapis.com/auth/drive';
     window.gapi.client
       .init({
         apiKey: process.env.REACT_APP_GOOGLE_AUTH_API_KEY,
@@ -42,4 +50,32 @@ const gapiInit = callback => {
   })();
 };
 
-export { loadGapi, gapiInit };
+const createRequest = ({
+  path,
+  method,
+  params,
+  headers,
+  body,
+}: RequestParam) => {
+  return window.gapi.client.request({
+    path,
+    method,
+    params,
+    headers,
+    body,
+  });
+};
+
+const executeRequest = requestObject => {
+  return new Promise((resolve, reject) => {
+    requestObject.execute(jsonResp => {
+      if (jsonResp) {
+        resolve(jsonResp);
+      } else {
+        reject('request failure');
+      }
+    });
+  });
+};
+
+export { loadGapi, gapiInit, createRequest, executeRequest };
