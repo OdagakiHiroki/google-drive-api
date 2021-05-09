@@ -1,6 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useHistory } from 'react-router-dom';
+import { Container } from './style';
 
 const Login = () => {
   const history = useHistory();
@@ -20,7 +21,9 @@ const Login = () => {
         <title>ログインページ</title>
         <meta name="description" content="login page" />
       </Helmet>
-      <button onClick={() => handleLoginClick()}>ログイン</button>
+      <Container>
+        <button onClick={() => handleLoginClick()}>ログイン</button>
+      </Container>
     </>
   );
 };
