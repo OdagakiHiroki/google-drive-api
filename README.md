@@ -9,3 +9,6 @@ https://developers.google.com/drive/api/v3/quickstart/js
 
 #### scopeの記載
 https://developers.google.com/identity/protocols/oauth2/scopes
+
+#### Filesのfieldパラメータ
+https://developers.google.com/drive/api/v3/reference/files
