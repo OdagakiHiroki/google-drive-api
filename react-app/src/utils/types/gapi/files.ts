@@ -13,6 +13,7 @@ type resFiles = {
   nextPageToken?: string;
   incompleteSearch?: boolean;
   files: file[];
+  error?: object;
 };
 
 export type { file, resFiles };

@@ -19,7 +19,7 @@ const Column = styled.div`
 `;
 
 const FileTitle = styled(Column)`
-  flex: 0 1 240px;
+  flex: 0 0 240px;
 `;
 
 const FileType = styled(Column)`

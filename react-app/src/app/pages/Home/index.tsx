@@ -6,22 +6,43 @@ import { getFilesList, createFile, getFileById } from 'utils/api/drive/files';
 import { Container, Row, FileTitle, FileType } from './style';
 
 export function Home() {
+  const [searchText, setSearchText] = useState<string>('');
   const [fileList, setFileList] = useState<file[]>([]);
-  const [downloadLink, setDownloadLink] = useState('');
+  const [downloadLink, setDownloadLink] = useState<string>('');
+
+  const fileFields = [
+    'kind',
+    'nextPageToken',
+    'files(kind, id, name, mimeType, description, starred, trashed)',
+  ];
 
   const getFiles = async () => {
-    const fields = [
-      'kind',
-      'nextPageToken',
-      'files(kind, id, name, mimeType, description, starred, trashed)',
-    ].join(', ');
     const params = {
-      fields,
+      fields: fileFields.join(', '),
     };
-    const res = await getFilesList(params);
-    console.debug(res);
-    if (res && res.files.length > 0) {
-      setFileList(res.files);
+    const { files, error } = await getFilesList(params);
+    console.debug(files, error);
+    if (error) {
+      console.debug('ファイル取得失敗');
+    }
+    if (files) {
+      setFileList(files);
+    }
+  };
+
+  const searchFiles = async text => {
+    const query = `name contains '${text}'`;
+    const params = {
+      fields: fileFields.join(', '),
+      q: query,
+    };
+    const { files, error } = await getFilesList(params);
+    console.debug(files, error);
+    if (error) {
+      console.debug('ファイル取得失敗');
+    }
+    if (files) {
+      setFileList(files);
     }
   };
 
@@ -70,25 +91,38 @@ export function Home() {
       </Helmet>
       <Container>
         <span>HOME</span>
+        <Row>
+          <button onClick={() => getFiles()}>全ファイル取得</button>
+          <button onClick={() => uploadFile()}>ファイルアップロード</button>
+          <button onClick={() => downloadFile()}>ファイルダウンロード</button>
+        </Row>
+        <span>ファイル検索</span>
+        <Row>
+          <input
+            type="text"
+            value={searchText}
+            onChange={e => setSearchText(e.currentTarget.value)}
+          />
+          <button onClick={() => searchFiles(searchText)}>検索</button>
+        </Row>
         <span>ファイル一覧</span>
         <Row>
           <Container>
-            {fileList.map(file => (
-              <Row key={file.id}>
-                <FileTitle>
-                  <span>{file.name}</span>
-                </FileTitle>
-                <FileType>
-                  <span>{mapMimeTypeToDispType(file.mimeType)}</span>
-                </FileType>
-              </Row>
-            ))}
+            {fileList.length === 0 ? (
+              <span>ファイルがありません</span>
+            ) : (
+              fileList.map(file => (
+                <Row key={file.id}>
+                  <FileTitle>
+                    <span>{file.name}</span>
+                  </FileTitle>
+                  <FileType>
+                    <span>{mapMimeTypeToDispType(file.mimeType)}</span>
+                  </FileType>
+                </Row>
+              ))
+            )}
           </Container>
-        </Row>
-        <Row>
-          <button onClick={() => getFiles()}>ファイル取得</button>
-          <button onClick={() => uploadFile()}>ファイルアップロード</button>
-          <button onClick={() => downloadFile()}>ファイルダウンロード</button>
         </Row>
         <div>
           <a
