@@ -44,6 +44,7 @@ export function App() {
           component={HomePage}
           requiresAuth={true}
         />
+        {/* TODO: Not Foundはページにする */}
         <BeforeRenderRoute
           exact={true}
           component={NotFoundPage}
