@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { mapMimeTypeToDispType } from 'utils/index';
+import { file } from 'utils/types/gapi/files';
 import { getFilesList, createFile, getFileById } from 'utils/api/drive/files';
+import { Container, Row, FileTitle, FileType } from './style';
 
-export function HomePage() {
+export function Home() {
+  const [fileList, setFileList] = useState<file[]>([]);
   const [downloadLink, setDownloadLink] = useState('');
 
   const getFiles = async () => {
@@ -15,8 +19,9 @@ export function HomePage() {
       fields,
     };
     const res = await getFilesList(params);
-    if (res) {
-      console.debug(res);
+    console.debug(res);
+    if (res && res.files.length > 0) {
+      setFileList(res.files);
     }
   };
 
@@ -61,28 +66,41 @@ export function HomePage() {
     <>
       <Helmet>
         <title>Home Page</title>
-        <meta name="description" content="A Boilerplate application homepage" />
+        <meta name="description" content="A Boilerplate application home" />
       </Helmet>
-      <span>HomePage container</span>
-      <div>
-        <button onClick={() => getFiles()}>ファイル取得</button>
-      </div>
-      <div>
-        <button onClick={() => uploadFile()}>ファイルアップロード</button>
-      </div>
-      <div>
-        <button onClick={() => downloadFile()}>ファイルダウンロード</button>
-      </div>
-      <div>
-        <a
-          href={downloadLink}
-          rel="noreferrer noopener"
-          target="_blank"
-          download="sample.mp4"
-        >
-          {downloadLink}
-        </a>
-      </div>
+      <Container>
+        <span>HOME</span>
+        <span>ファイル一覧</span>
+        <Row>
+          <Container>
+            {fileList.map(file => (
+              <Row key={file.id}>
+                <FileTitle>
+                  <span>{file.name}</span>
+                </FileTitle>
+                <FileType>
+                  <span>{mapMimeTypeToDispType(file.mimeType)}</span>
+                </FileType>
+              </Row>
+            ))}
+          </Container>
+        </Row>
+        <Row>
+          <button onClick={() => getFiles()}>ファイル取得</button>
+          <button onClick={() => uploadFile()}>ファイルアップロード</button>
+          <button onClick={() => downloadFile()}>ファイルダウンロード</button>
+        </Row>
+        <div>
+          <a
+            href={downloadLink}
+            rel="noreferrer noopener"
+            target="_blank"
+            download="sample.mp4"
+          >
+            {downloadLink}
+          </a>
+        </div>
+      </Container>
     </>
   );
 }

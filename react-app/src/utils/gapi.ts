@@ -66,7 +66,7 @@ const createRequest = ({
   });
 };
 
-const executeRequest = requestObject => {
+const executeRequest = (requestObject): Promise<any> => {
   return new Promise((resolve, reject) => {
     requestObject.execute(jsonResp => {
       if (jsonResp) {
