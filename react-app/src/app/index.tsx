@@ -13,7 +13,7 @@ import { Switch, BrowserRouter } from 'react-router-dom';
 import { GlobalStyle } from 'styles/global-styles';
 
 import { Login } from './pages/Login/Loadable';
-import { HomePage } from './pages/HomePage/Loadable';
+import { Home } from './pages/Home/Loadable';
 import { NotFoundPage } from './components/NotFoundPage/Loadable';
 import { useTranslation } from 'react-i18next';
 
@@ -41,7 +41,7 @@ export function App() {
         <BeforeRenderRoute
           exact={true}
           path="/"
-          component={HomePage}
+          component={Home}
           requiresAuth={true}
         />
         {/* TODO: Not Foundはページにする */}
