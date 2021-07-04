@@ -1,6 +1,7 @@
+import { resFiles } from 'utils/types/gapi/files';
 import { createRequest, executeRequest } from 'utils/gapi';
 
-const getFilesList = async params => {
+const getFilesList = async (params): Promise<resFiles> => {
   const request = createRequest({
     path: '/drive/v3/files',
     method: 'GET',
