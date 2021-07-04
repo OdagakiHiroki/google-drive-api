@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { mapMimeTypeToDispType } from 'utils/index';
 import { file } from 'utils/types/gapi/files';
 import { getFilesList, createFile, getFileById } from 'utils/api/drive/files';
 import { Container, Row, FileTitle, FileType } from './style';
@@ -78,7 +79,7 @@ export function Home() {
                   <span>{file.name}</span>
                 </FileTitle>
                 <FileType>
-                  <span>{file.mimeType}</span>
+                  <span>{mapMimeTypeToDispType(file.mimeType)}</span>
                 </FileType>
               </Row>
             ))}
