@@ -1,14 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { mapMimeTypeToDispType } from 'utils/index';
 import { file } from 'utils/types/gapi/files';
-import { getFilesList, createFile, getFileById } from 'utils/api/drive/files';
+import {
+  getFilesList,
+  createFile,
+  getDownloadURL,
+} from 'utils/api/drive/files';
 import { Container, Row, FileTitle, FileType } from './style';
 
 export function Home() {
+  const downloadLinkEl = useRef<HTMLAnchorElement>(null);
   const [searchText, setSearchText] = useState<string>('');
   const [fileList, setFileList] = useState<file[]>([]);
   const [downloadLink, setDownloadLink] = useState<string>('');
+  const [downloadFileName, setDownloadFileName] = useState<string>('');
+
+  useEffect(() => {
+    if (downloadLinkEl.current === null) {
+      return;
+    }
+    if (!downloadLink) {
+      return;
+    }
+    downloadLinkEl.current.click();
+    setDownloadLink('');
+    setDownloadFileName('');
+  }, [downloadLink]);
 
   const fileFields = [
     'kind',
@@ -62,7 +80,7 @@ export function Home() {
     console.debug(res);
   };
 
-  const downloadFile = async () => {
+  const downloadFile = async file => {
     const fields = [
       'kind',
       'id',
@@ -77,10 +95,9 @@ export function Home() {
     const params = {
       fields,
     };
-    const fieldId = '';
-    const res: any = await getFileById(fieldId, params);
-    console.debug(res.webContentLink);
-    setDownloadLink(res.webContentLink);
+    const res = await getDownloadURL(file, params);
+    setDownloadFileName(file.name);
+    setDownloadLink(res);
   };
 
   return (
@@ -94,7 +111,6 @@ export function Home() {
         <Row>
           <button onClick={() => getFiles()}>全ファイル取得</button>
           <button onClick={() => uploadFile()}>ファイルアップロード</button>
-          <button onClick={() => downloadFile()}>ファイルダウンロード</button>
         </Row>
         <span>ファイル検索</span>
         <Row>
@@ -119,6 +135,7 @@ export function Home() {
                   <FileType>
                     <span>{mapMimeTypeToDispType(file.mimeType)}</span>
                   </FileType>
+                  <button onClick={() => downloadFile(file)}>DL</button>
                 </Row>
               ))
             )}
@@ -126,10 +143,10 @@ export function Home() {
         </Row>
         <div>
           <a
+            ref={downloadLinkEl}
             href={downloadLink}
             rel="noreferrer noopener"
-            target="_blank"
-            download="sample.mp4"
+            download={downloadFileName}
           >
             {downloadLink}
           </a>
