@@ -1,16 +1,67 @@
+const MSWordDocumentMimeType =
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+const MSExcelMimeType =
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+const MSPowerPointMimeType =
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+
 const mimeTypeMap = {
-  'text/plain': 'テキストファイル',
-  'application/vnd.google-apps.document': 'ドキュメント',
-  'application/vnd.google-apps.spreadsheet': 'スプレッドシート',
-  'application/vnd.google-apps.folder': 'フォルダ',
-  'application/pdf': 'PDF',
-  'image/png': '画像ファイル',
-  'video/mp4': '動画ファイル',
-  'application/octet-stream': '不明',
-}
+  'text/plain': {
+    typeName: 'テキストファイル',
+    exportMimeType: 'text/plain',
+  },
+  'application/vnd.google-apps.document': {
+    typeName: 'ドキュメント',
+    exportMimeType: MSWordDocumentMimeType,
+  },
+  'application/vnd.google-apps.spreadsheet': {
+    typeName: 'スプレッドシート',
+    exportMimeType: MSExcelMimeType,
+  },
+  'application/vnd.google-apps.folder': {
+    typeName: 'フォルダ',
+    exportMimeType: 'application/octet-stream',
+  },
+  'application/pdf': {
+    typeName: 'PDF',
+    exportMimeType: 'application/pdf',
+  },
+  'image/png': {
+    typeName: '画像ファイル',
+    exportMimeType: 'image/png',
+  },
+  'video/mp4': {
+    typeName: '動画ファイル',
+    exportMimeType: 'video/mp4',
+  },
+  'application/octet-stream': {
+    typeName: '不明',
+    exportMimeType: 'application/octet-stream',
+  },
+};
+
+const useExportMethodMimeTypeList = [
+  'application/vnd.google-apps.document',
+  'application/vnd.google-apps.spreadsheet',
+  'application/vnd.google-apps.folder',
+];
 
 const mapMimeTypeToDispType = mimeType => {
-  return mimeTypeMap[mimeType] || '不明';
-}
+  if (!mimeTypeMap[mimeType]) {
+    return '不明';
+  }
+  return mimeTypeMap[mimeType].typeName;
+};
 
-export { mapMimeTypeToDispType };
+const mapMimeTypeToExportType = mimeType => {
+  if (!mimeTypeMap[mimeType]) {
+    return mimeType;
+  }
+  return mimeTypeMap[mimeType].exportMimeType;
+};
+
+export {
+  useExportMethodMimeTypeList,
+  mapMimeTypeToDispType,
+  mapMimeTypeToExportType,
+};
