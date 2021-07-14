@@ -28,18 +28,14 @@ export function Home() {
     setDownloadFileName('');
   }, [downloadLink]);
 
-  const fileFields = [
-    'kind',
-    'nextPageToken',
-    'files(kind, id, name, mimeType, description, starred, trashed)',
-  ];
+  const fileFields =
+    'kind, id, name, mimeType, description, starred, trashed, webContentLink, webViewLink';
 
   const getFiles = async () => {
     const params = {
-      fields: fileFields.join(', '),
+      fields: `kind, nextPageToken, files(${fileFields})`,
     };
     const { files, error } = await getFilesList(params);
-    console.debug(files, error);
     if (error) {
       console.debug('ファイル取得失敗');
     }
@@ -51,11 +47,10 @@ export function Home() {
   const searchFiles = async text => {
     const query = `name contains '${text}'`;
     const params = {
-      fields: fileFields.join(', '),
+      fields: `kind, nextPageToken, files(${fileFields})`,
       q: query,
     };
     const { files, error } = await getFilesList(params);
-    console.debug(files, error);
     if (error) {
       console.debug('ファイル取得失敗');
     }
@@ -77,23 +72,11 @@ export function Home() {
     };
     const body = file;
     const res = await createFile(params, headers, body);
-    console.debug(res);
   };
 
   const downloadFile = async file => {
-    const fields = [
-      'kind',
-      'id',
-      'name',
-      'mimeType',
-      'description',
-      'starred',
-      'trashed',
-      'webContentLink',
-      'webViewLink',
-    ].join(', ');
     const params = {
-      fields,
+      fields: fileFields,
     };
     const res = await getDownloadURL(file, params);
     setDownloadFileName(file.name);
