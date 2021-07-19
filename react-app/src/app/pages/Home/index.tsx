@@ -59,19 +59,21 @@ export function Home() {
     }
   };
 
-  const uploadFile = async () => {
-    const file = new File(['Hello, world!'], 'hello world.txt', {
-      type: 'text/plain;charset=utf-8',
-    });
+  const uploadFile = async e => {
+    console.debug(e.currentTarget.files[0]);
+    const targetFile = e.currentTarget.files[0];
+    const { name, size, type } = targetFile;
+    const fileBlob = new Blob([targetFile], { type });
     const params = {
       uploadType: 'media',
     };
     const headers = {
-      'Content-Type': file.type,
-      'Content-Length': file.size,
+      'Content-Type': type,
+      'Content-Length': size,
     };
-    const body = file;
+    const body = fileBlob;
     const res = await createFile(params, headers, body);
+    console.debug(res);
   };
 
   const downloadFile = async file => {
@@ -93,7 +95,7 @@ export function Home() {
         <span>HOME</span>
         <Row>
           <button onClick={() => getFiles()}>全ファイル取得</button>
-          <button onClick={() => uploadFile()}>ファイルアップロード</button>
+          <input type="file" onChange={e => uploadFile(e)} />
         </Row>
         <span>ファイル検索</span>
         <Row>
