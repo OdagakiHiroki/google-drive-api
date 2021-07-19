@@ -1,27 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { mapMimeTypeToDispType } from 'utils/index';
 import { file } from 'utils/types/gapi/files';
-import { getFilesList, createFile, getFileById } from 'utils/api/drive/files';
+import {
+  getFilesList,
+  createFile,
+  getDownloadURL,
+} from 'utils/api/drive/files';
 import { Container, Row, FileTitle, FileType } from './style';
 
 export function Home() {
+  const downloadLinkEl = useRef<HTMLAnchorElement>(null);
   const [searchText, setSearchText] = useState<string>('');
   const [fileList, setFileList] = useState<file[]>([]);
   const [downloadLink, setDownloadLink] = useState<string>('');
+  const [downloadFileName, setDownloadFileName] = useState<string>('');
 
-  const fileFields = [
-    'kind',
-    'nextPageToken',
-    'files(kind, id, name, mimeType, description, starred, trashed)',
-  ];
+  useEffect(() => {
+    if (downloadLinkEl.current === null) {
+      return;
+    }
+    if (!downloadLink) {
+      return;
+    }
+    downloadLinkEl.current.click();
+    setDownloadLink('');
+    setDownloadFileName('');
+  }, [downloadLink]);
+
+  const fileFields =
+    'kind, id, name, mimeType, description, starred, trashed, webContentLink, webViewLink';
 
   const getFiles = async () => {
     const params = {
-      fields: fileFields.join(', '),
+      fields: `kind, nextPageToken, files(${fileFields})`,
     };
     const { files, error } = await getFilesList(params);
-    console.debug(files, error);
     if (error) {
       console.debug('ファイル取得失敗');
     }
@@ -33,11 +47,10 @@ export function Home() {
   const searchFiles = async text => {
     const query = `name contains '${text}'`;
     const params = {
-      fields: fileFields.join(', '),
+      fields: `kind, nextPageToken, files(${fileFields})`,
       q: query,
     };
     const { files, error } = await getFilesList(params);
-    console.debug(files, error);
     if (error) {
       console.debug('ファイル取得失敗');
     }
@@ -59,28 +72,15 @@ export function Home() {
     };
     const body = file;
     const res = await createFile(params, headers, body);
-    console.debug(res);
   };
 
-  const downloadFile = async () => {
-    const fields = [
-      'kind',
-      'id',
-      'name',
-      'mimeType',
-      'description',
-      'starred',
-      'trashed',
-      'webContentLink',
-      'webViewLink',
-    ].join(', ');
+  const downloadFile = async file => {
     const params = {
-      fields,
+      fields: fileFields,
     };
-    const fieldId = '';
-    const res: any = await getFileById(fieldId, params);
-    console.debug(res.webContentLink);
-    setDownloadLink(res.webContentLink);
+    const res = await getDownloadURL(file, params);
+    setDownloadFileName(file.name);
+    setDownloadLink(res);
   };
 
   return (
@@ -94,7 +94,6 @@ export function Home() {
         <Row>
           <button onClick={() => getFiles()}>全ファイル取得</button>
           <button onClick={() => uploadFile()}>ファイルアップロード</button>
-          <button onClick={() => downloadFile()}>ファイルダウンロード</button>
         </Row>
         <span>ファイル検索</span>
         <Row>
@@ -119,6 +118,7 @@ export function Home() {
                   <FileType>
                     <span>{mapMimeTypeToDispType(file.mimeType)}</span>
                   </FileType>
+                  <button onClick={() => downloadFile(file)}>DL</button>
                 </Row>
               ))
             )}
@@ -126,10 +126,10 @@ export function Home() {
         </Row>
         <div>
           <a
+            ref={downloadLinkEl}
             href={downloadLink}
             rel="noreferrer noopener"
-            target="_blank"
-            download="sample.mp4"
+            download={downloadFileName}
           >
             {downloadLink}
           </a>

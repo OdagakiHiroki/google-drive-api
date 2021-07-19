@@ -66,14 +66,22 @@ const createRequest = ({
   });
 };
 
-const executeRequest = (requestObject): Promise<any> => {
+const executeRequest = (requestObject, isRawRes = false): Promise<any> => {
   return new Promise((resolve, reject) => {
-    requestObject.execute(jsonResp => {
+    requestObject.execute((jsonResp, rawResp) => {
+      if (isRawRes) {
+        if (rawResp) {
+          resolve(rawResp);
+          return;
+        }
+        reject('request failure');
+        return;
+      }
       if (jsonResp) {
         resolve(jsonResp);
-      } else {
-        reject('request failure');
+        return;
       }
+      reject('request failure');
     });
   });
 };

@@ -22,3 +22,10 @@ name contains 'hello'
 name contains 'hello' and name contains 'world'
 - or検索
 name contains 'hello' or name contains 'world'
+
+#### MimeTypes
+- google workspaceのMimeTypeについて
+https://developers.google.com/drive/api/v3/mime-types
+
+- exportに対応するMimeTypeについて
+https://developers.google.com/drive/api/v3/ref-export-formats
