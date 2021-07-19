@@ -25,7 +25,6 @@ const createFile = async (params, headers, body) => {
   return await executeRequest(request);
 };
 
-// TODO: リファクタ
 const getDownloadURL = async (fileObj, params) => {
   const { id: fileId, mimeType } = fileObj;
   const useExportApi = useExportMethodMimeTypeList.includes(mimeType);
