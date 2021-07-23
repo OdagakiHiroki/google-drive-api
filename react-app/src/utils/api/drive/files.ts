@@ -2,6 +2,7 @@ import { resFiles } from 'utils/types/gapi/files';
 import {
   useExportMethodMimeTypeList,
   mapMimeTypeToExportType,
+  toBase64,
 } from 'utils/index';
 import { createRequest, executeRequest } from 'utils/gapi';
 
@@ -14,7 +15,34 @@ const getFilesList = async (params): Promise<resFiles> => {
   return await executeRequest(request);
 };
 
-const createFile = async (params, headers, body) => {
+const createFile = async fileObj => {
+  const { name, size, type } = fileObj;
+  const params = {
+    uploadType: 'multipart',
+  };
+  const boundary = 'foo_bar_baz';
+  const delimiter = `\n--${boundary}\n`;
+  const delimiterEnd = `\n--${boundary}--`;
+  const headers = {
+    'Content-Type': `multipart/related; boundary=${boundary}`,
+    'Content-Length': size,
+  };
+  const fileData = (await toBase64(fileObj)).replace(/^.*base64,/, '');
+  const metaData = {
+    name,
+    mimeType: type,
+  };
+  // TODO: テンプレートリテラルで改行をうまく処理する方法を考える
+  // const body = `${delimiter}Content-Type: application/json; charset=UTF-8\n\n${JSON.stringify(metaData)}${delimiter}Content-Type: ${type}\nContent-Transfer-Encoding: base64\n\n${fileData}\n${delimiterEnd}`
+  const body = delimiter +
+    'Content-Type: application/json; charset=UTF-8\n\n' +
+    JSON.stringify(metaData) +
+    delimiter +
+    `Content-Type: ${type}\n` +
+    'Content-Transfer-Encoding: base64\n\n' +
+    `${fileData}\n` +
+    delimiterEnd;
+
   const request = createRequest({
     path: '/upload/drive/v3/files',
     method: 'POST',

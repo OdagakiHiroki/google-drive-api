@@ -60,19 +60,7 @@ export function Home() {
   };
 
   const uploadFile = async e => {
-    console.debug(e.currentTarget.files[0]);
-    const targetFile = e.currentTarget.files[0];
-    const { name, size, type } = targetFile;
-    const fileBlob = new Blob([targetFile], { type });
-    const params = {
-      uploadType: 'media',
-    };
-    const headers = {
-      'Content-Type': type,
-      'Content-Length': size,
-    };
-    const body = fileBlob;
-    const res = await createFile(params, headers, body);
+    const res = await createFile(e.currentTarget.files[0]);
     console.debug(res);
   };
 
