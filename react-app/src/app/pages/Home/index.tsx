@@ -60,8 +60,11 @@ export function Home() {
   };
 
   const uploadFile = async e => {
-    const res = await createFile(e.currentTarget.files[0]);
-    console.debug(res);
+    e.persist();
+    const res = await createFile(e.target.files[0]);
+    if (res.id) {
+      e.target.value = '';
+    }
   };
 
   const downloadFile = async file => {
