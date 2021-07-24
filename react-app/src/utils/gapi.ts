@@ -94,17 +94,19 @@ const createBatchRequest = requests => {
   return batch;
 };
 
-const executeBatchRequest = batch => {
-  batch.then(
-    success => {
-      console.debug(success);
-      return success;
-    },
-    error => {
-      console.debug(error);
-      return error;
-    },
-  );
+const executeBatchRequest = (batch): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    batch.then(
+      success => {
+        resolve(success);
+        return;
+      },
+      error => {
+        reject(error);
+        return;
+      },
+    );
+  });
 };
 
 export {
