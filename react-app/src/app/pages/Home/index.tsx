@@ -230,7 +230,9 @@ export function Home() {
                   <FileType>
                     <span>{mapMimeTypeToDispType(file.mimeType)}</span>
                   </FileType>
-                  <button onClick={e => downloadFile(e, file)}>DL</button>
+                  {file.mimeType !== 'application/vnd.google-apps.folder' && (
+                    <button onClick={e => downloadFile(e, file)}>DL</button>
+                  )}
                 </Row>
               ))
             )}
