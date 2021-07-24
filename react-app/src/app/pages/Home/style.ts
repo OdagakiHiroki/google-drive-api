@@ -10,6 +10,17 @@ const Row = styled.div`
   width: 100%;
 `;
 
+const Tab = styled.div<{ isActive?: boolean }>`
+  background-color: #f4fdff;
+  border: 1px solid #0090a6;
+  & + &{
+    border-left: none;
+  }
+  ${props => props.isActive &&`
+    background-color: #bdf7ff;
+  `}
+`;
+
 const Column = styled.div`
   padding: 4px 8px;
   border: 1px solid #808080;
@@ -34,4 +45,4 @@ const FileType = styled(Column)`
   border-left: none;
 `;
 
-export { Container, Row, Column, CheckColumn, FileTitle, FileType };
+export { Container, Row, Tab, Column, CheckColumn, FileTitle, FileType };

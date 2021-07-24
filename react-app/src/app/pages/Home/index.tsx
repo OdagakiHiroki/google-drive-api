@@ -8,11 +8,22 @@ import {
   getDownloadURL,
   updateMultiFiles,
 } from 'utils/api/drive/files';
-import { Container, Row, CheckColumn, FileTitle, FileType } from './style';
+import { Container, Row, Tab, CheckColumn, FileTitle, FileType } from './style';
+
+type tabs = {
+  myDrive: number;
+  trash: number;
+};
 
 export function Home() {
+  const tabList: tabs = {
+    myDrive: 0,
+    trash: 99,
+  };
+
   const downloadLinkEl = useRef<HTMLAnchorElement>(null);
   const [searchText, setSearchText] = useState<string>('');
+  const [selectedTab, setSelectedTab] = useState<number>(tabList.myDrive);
   const [fileList, setFileList] = useState<file[]>([]);
   const [downloadLink, setDownloadLink] = useState<string>('');
   const [downloadFileName, setDownloadFileName] = useState<string>('');
@@ -40,6 +51,10 @@ export function Home() {
       }
       return [...prevList, fileId];
     });
+  };
+
+  const handleTabClick = (tabValue: number) => {
+    setSelectedTab(tabValue);
   };
 
   const getFiles = async () => {
@@ -121,6 +136,20 @@ export function Home() {
         </Row>
         <Row>
           <button onClick={() => trashFile()}>削除</button>
+        </Row>
+        <Row>
+          <Tab
+            isActive={selectedTab === tabList.myDrive}
+            onClick={() => handleTabClick(tabList.myDrive)}
+          >
+            マイドライブ
+          </Tab>
+          <Tab
+            isActive={selectedTab === tabList.trash}
+            onClick={() => handleTabClick(tabList.trash)}
+          >
+            ゴミ箱
+          </Tab>
         </Row>
         <span>ファイル一覧</span>
         <Row>
