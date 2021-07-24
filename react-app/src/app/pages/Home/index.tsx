@@ -6,6 +6,7 @@ import {
   getFilesList,
   uploadFileData,
   getDownloadURL,
+  updateFile,
 } from 'utils/api/drive/files';
 import { Container, Row, CheckColumn, FileTitle, FileType } from './style';
 
@@ -87,6 +88,18 @@ export function Home() {
     setDownloadLink(res);
   };
 
+  const trashFile = async () => {
+    if (checkedFileList.length === 0) {
+      return;
+    }
+    const fileId = checkedFileList[0];
+    const body = {
+      trashed: true,
+    };
+    const res = await updateFile(fileId, body);
+    console.debug(res);
+  };
+
   return (
     <>
       <Helmet>
@@ -107,6 +120,9 @@ export function Home() {
             onChange={e => setSearchText(e.currentTarget.value)}
           />
           <button onClick={() => searchFiles(searchText)}>検索</button>
+        </Row>
+        <Row>
+          <button onClick={() => trashFile()}>削除</button>
         </Row>
         <span>ファイル一覧</span>
         <Row>

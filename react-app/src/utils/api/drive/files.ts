@@ -91,4 +91,13 @@ const _getFileContent = async (fileId, exportMimeType, params) => {
   return dataUrl;
 };
 
-export { getFilesList, uploadFileData, getDownloadURL };
+const updateFile = async (fileId, body) => {
+  const request = createRequest({
+    path: `/drive/v3/files/${fileId}`,
+    method: 'PATCH',
+    body,
+  });
+  return await executeRequest(request);
+};
+
+export { getFilesList, uploadFileData, getDownloadURL, updateFile };
