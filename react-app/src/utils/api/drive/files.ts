@@ -40,7 +40,8 @@ const uploadFileData = async fileObj => {
   };
   // TODO: テンプレートリテラルで改行をうまく処理する方法を考える
   // const body = `${delimiter}Content-Type: application/json; charset=UTF-8\n\n${JSON.stringify(metaData)}${delimiter}Content-Type: ${type}\nContent-Transfer-Encoding: base64\n\n${fileData}\n${delimiterEnd}`
-  const body = delimiter +
+  const body =
+    delimiter +
     'Content-Type: application/json; charset=UTF-8\n\n' +
     JSON.stringify(metaData) +
     delimiter +
