@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { mapMimeTypeToDispType } from 'utils/index';
 import { file } from 'utils/types/gapi/files';
@@ -24,22 +24,35 @@ type tabs = {
 };
 
 export function Home() {
-  const tabList: tabs = {
-    myDrive: 0,
-    trash: 99,
-  };
+  const tabList: tabs = useMemo(() => {
+    return {
+      myDrive: 0,
+      trash: 99,
+    };
+  }, []);
 
   const downloadLinkEl = useRef<HTMLAnchorElement>(null);
   const [searchText, setSearchText] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState<number>(tabList.myDrive);
+  const [currentFolder, setCurrentFolder] = useState<string>('root');
+  const [baseQuery, setBaseQuery] = useState<string>('');
   const [fileList, setFileList] = useState<file[]>([]);
   const [downloadLink, setDownloadLink] = useState<string>('');
   const [downloadFileName, setDownloadFileName] = useState<string>('');
   const [checkedFileList, setCheckedFileList] = useState<string[]>([]);
 
   useEffect(() => {
-    getFiles(selectedTab);
-  }, [selectedTab]);
+    if (baseQuery === '') {
+      return;
+    }
+    getFiles();
+  }, [baseQuery]);
+
+  useEffect(() => {
+    const isTrashed = selectedTab === tabList.trash;
+    const query = `trashed = ${isTrashed} and '${currentFolder}' in parents`;
+    setBaseQuery(query);
+  }, [selectedTab, currentFolder, tabList]);
 
   useEffect(() => {
     if (downloadLinkEl.current === null) {
@@ -69,14 +82,18 @@ export function Home() {
     setSelectedTab(tabValue);
   };
 
-  const getFiles = async (tabValue: number) => {
+  const changeCurrentFolder = (folderId: string) => {
+    setCurrentFolder(folderId);
+  };
+
+  const getFiles = async () => {
     setCheckedFileList([]);
-    const isTrashed = tabValue === tabList.trash;
     const params = {
       fields: `kind, nextPageToken, files(${fileFields})`,
-      q: `trashed = ${isTrashed}`,
+      q: baseQuery,
     };
     const { files, error } = await getFilesList(params);
+    console.debug(files);
     if (error) {
       console.debug('ファイル取得失敗');
     }
@@ -85,10 +102,9 @@ export function Home() {
     }
   };
 
-  const searchFiles = async (text: string, tabValue: number) => {
+  const searchFiles = async (text: string) => {
     setCheckedFileList([]);
-    const isTrashed = tabValue === tabList.trash;
-    const query = `name contains '${text}' and trashed = ${isTrashed}`;
+    const query = `${baseQuery} and name contains '${text}'`;
     const params = {
       fields: `kind, nextPageToken, files(${fileFields})`,
       q: query,
@@ -107,7 +123,7 @@ export function Home() {
     const res = await uploadFileData(e.target.files[0]);
     if (res.id) {
       e.target.value = '';
-      await getFiles(selectedTab);
+      await getFiles();
     }
   };
 
@@ -128,7 +144,7 @@ export function Home() {
       trashed: true,
     };
     await updateMultiFiles(checkedFileList, body);
-    await getFiles(selectedTab);
+    await getFiles();
   };
 
   return (
@@ -140,7 +156,7 @@ export function Home() {
       <Container>
         <span>HOME</span>
         <Row>
-          <button onClick={() => getFiles(selectedTab)}>全ファイル取得</button>
+          <button onClick={() => getFiles()}>全ファイル取得</button>
           <input type="file" onChange={e => uploadFile(e)} />
         </Row>
         <span>ファイル検索</span>
@@ -150,9 +166,7 @@ export function Home() {
             value={searchText}
             onChange={e => setSearchText(e.currentTarget.value)}
           />
-          <button onClick={() => searchFiles(searchText, selectedTab)}>
-            検索
-          </button>
+          <button onClick={() => searchFiles(searchText)}>検索</button>
         </Row>
         <Row>
           <button onClick={() => trashFile()}>削除</button>
