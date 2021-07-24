@@ -128,7 +128,7 @@ export function Home() {
       trashed: true,
     };
     await updateMultiFiles(checkedFileList, body);
-    setCheckedFileList([]);
+    await getFiles(selectedTab);
   };
 
   return (
