@@ -36,6 +36,24 @@ const CheckColumn = styled(Column)`
   flex: 0 0 80px;
 `;
 
+const CheckBox = styled.div<{ isActive?: boolean }>`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background-color: #ffffff;
+  border: 1px solid #005196;
+  border-radius: 8px;
+  & + & {
+    border-left: none;
+  }
+  ${props => props.isActive &&`
+    color: #ffffff;
+    background-color: #008bff;
+  `}
+`;
+
 const FileTitle = styled(Column)`
   flex: 0 0 240px;
 `;
@@ -45,4 +63,13 @@ const FileType = styled(Column)`
   border-left: none;
 `;
 
-export { Container, Row, Tab, Column, CheckColumn, FileTitle, FileType };
+export {
+  Container,
+  Row,
+  Tab,
+  Column,
+  CheckColumn,
+  CheckBox,
+  FileTitle,
+  FileType,
+};

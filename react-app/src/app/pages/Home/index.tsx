@@ -8,7 +8,15 @@ import {
   getDownloadURL,
   updateMultiFiles,
 } from 'utils/api/drive/files';
-import { Container, Row, Tab, CheckColumn, FileTitle, FileType } from './style';
+import {
+  Container,
+  Row,
+  Tab,
+  CheckColumn,
+  CheckBox,
+  FileTitle,
+  FileType,
+} from './style';
 
 type tabs = {
   myDrive: number;
@@ -62,6 +70,7 @@ export function Home() {
   };
 
   const getFiles = async (tabValue: number) => {
+    setCheckedFileList([]);
     const isTrashed = tabValue === tabList.trash;
     const params = {
       fields: `kind, nextPageToken, files(${fileFields})`,
@@ -76,8 +85,10 @@ export function Home() {
     }
   };
 
-  const searchFiles = async text => {
-    const query = `name contains '${text}'`;
+  const searchFiles = async (text: string, tabValue: number) => {
+    setCheckedFileList([]);
+    const isTrashed = tabValue === tabList.trash;
+    const query = `name contains '${text}' and trashed = ${isTrashed}`;
     const params = {
       fields: `kind, nextPageToken, files(${fileFields})`,
       q: query,
@@ -117,6 +128,7 @@ export function Home() {
       trashed: true,
     };
     await updateMultiFiles(checkedFileList, body);
+    setCheckedFileList([]);
   };
 
   return (
@@ -138,7 +150,9 @@ export function Home() {
             value={searchText}
             onChange={e => setSearchText(e.currentTarget.value)}
           />
-          <button onClick={() => searchFiles(searchText)}>検索</button>
+          <button onClick={() => searchFiles(searchText, selectedTab)}>
+            検索
+          </button>
         </Row>
         <Row>
           <button onClick={() => trashFile()}>削除</button>
@@ -166,10 +180,12 @@ export function Home() {
               fileList.map(file => (
                 <Row key={file.id}>
                   <CheckColumn>
-                    <input
-                      type="checkbox"
-                      onChange={() => handleFileCheck(file.id)}
-                    />
+                    <CheckBox
+                      isActive={checkedFileList.includes(file.id)}
+                      onClick={() => handleFileCheck(file.id)}
+                    >
+                      ✔︎
+                    </CheckBox>
                   </CheckColumn>
                   <FileTitle>
                     <span>{file.name}</span>
