@@ -64,6 +64,7 @@ export function Home() {
     const res = await createFile(e.target.files[0]);
     if (res.id) {
       e.target.value = '';
+      await getFiles();
     }
   };
 
