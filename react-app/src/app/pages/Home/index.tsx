@@ -8,15 +8,38 @@ import {
   getDownloadURL,
   updateMultiFiles,
 } from 'utils/api/drive/files';
-import { Container, Row, CheckColumn, FileTitle, FileType } from './style';
+import {
+  Container,
+  Row,
+  Tab,
+  CheckColumn,
+  CheckBox,
+  FileTitle,
+  FileType,
+} from './style';
+
+type tabs = {
+  myDrive: number;
+  trash: number;
+};
 
 export function Home() {
+  const tabList: tabs = {
+    myDrive: 0,
+    trash: 99,
+  };
+
   const downloadLinkEl = useRef<HTMLAnchorElement>(null);
   const [searchText, setSearchText] = useState<string>('');
+  const [selectedTab, setSelectedTab] = useState<number>(tabList.myDrive);
   const [fileList, setFileList] = useState<file[]>([]);
   const [downloadLink, setDownloadLink] = useState<string>('');
   const [downloadFileName, setDownloadFileName] = useState<string>('');
   const [checkedFileList, setCheckedFileList] = useState<string[]>([]);
+
+  useEffect(() => {
+    getFiles(selectedTab);
+  }, [selectedTab]);
 
   useEffect(() => {
     if (downloadLinkEl.current === null) {
@@ -42,9 +65,16 @@ export function Home() {
     });
   };
 
-  const getFiles = async () => {
+  const handleTabClick = (tabValue: number) => {
+    setSelectedTab(tabValue);
+  };
+
+  const getFiles = async (tabValue: number) => {
+    setCheckedFileList([]);
+    const isTrashed = tabValue === tabList.trash;
     const params = {
       fields: `kind, nextPageToken, files(${fileFields})`,
+      q: `trashed = ${isTrashed}`,
     };
     const { files, error } = await getFilesList(params);
     if (error) {
@@ -55,8 +85,10 @@ export function Home() {
     }
   };
 
-  const searchFiles = async text => {
-    const query = `name contains '${text}'`;
+  const searchFiles = async (text: string, tabValue: number) => {
+    setCheckedFileList([]);
+    const isTrashed = tabValue === tabList.trash;
+    const query = `name contains '${text}' and trashed = ${isTrashed}`;
     const params = {
       fields: `kind, nextPageToken, files(${fileFields})`,
       q: query,
@@ -75,7 +107,7 @@ export function Home() {
     const res = await uploadFileData(e.target.files[0]);
     if (res.id) {
       e.target.value = '';
-      await getFiles();
+      await getFiles(selectedTab);
     }
   };
 
@@ -96,6 +128,7 @@ export function Home() {
       trashed: true,
     };
     await updateMultiFiles(checkedFileList, body);
+    await getFiles(selectedTab);
   };
 
   return (
@@ -107,7 +140,7 @@ export function Home() {
       <Container>
         <span>HOME</span>
         <Row>
-          <button onClick={() => getFiles()}>全ファイル取得</button>
+          <button onClick={() => getFiles(selectedTab)}>全ファイル取得</button>
           <input type="file" onChange={e => uploadFile(e)} />
         </Row>
         <span>ファイル検索</span>
@@ -117,10 +150,26 @@ export function Home() {
             value={searchText}
             onChange={e => setSearchText(e.currentTarget.value)}
           />
-          <button onClick={() => searchFiles(searchText)}>検索</button>
+          <button onClick={() => searchFiles(searchText, selectedTab)}>
+            検索
+          </button>
         </Row>
         <Row>
           <button onClick={() => trashFile()}>削除</button>
+        </Row>
+        <Row>
+          <Tab
+            isActive={selectedTab === tabList.myDrive}
+            onClick={() => handleTabClick(tabList.myDrive)}
+          >
+            マイドライブ
+          </Tab>
+          <Tab
+            isActive={selectedTab === tabList.trash}
+            onClick={() => handleTabClick(tabList.trash)}
+          >
+            ゴミ箱
+          </Tab>
         </Row>
         <span>ファイル一覧</span>
         <Row>
@@ -131,10 +180,12 @@ export function Home() {
               fileList.map(file => (
                 <Row key={file.id}>
                   <CheckColumn>
-                    <input
-                      type="checkbox"
-                      onChange={() => handleFileCheck(file.id)}
-                    />
+                    <CheckBox
+                      isActive={checkedFileList.includes(file.id)}
+                      onClick={() => handleFileCheck(file.id)}
+                    >
+                      ✔︎
+                    </CheckBox>
                   </CheckColumn>
                   <FileTitle>
                     <span>{file.name}</span>
