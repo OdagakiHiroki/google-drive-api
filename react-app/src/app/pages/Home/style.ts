@@ -18,6 +18,13 @@ const Column = styled.div`
   text-overflow: ellipsis;
 `;
 
+const CheckColumn = styled(Column)`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 0 0 80px;
+`;
+
 const FileTitle = styled(Column)`
   flex: 0 0 240px;
 `;
@@ -27,4 +34,4 @@ const FileType = styled(Column)`
   border-left: none;
 `;
 
-export { Container, Row, Column, FileTitle, FileType };
+export { Container, Row, Column, CheckColumn, FileTitle, FileType };

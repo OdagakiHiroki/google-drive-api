@@ -7,7 +7,7 @@ import {
   uploadFileData,
   getDownloadURL,
 } from 'utils/api/drive/files';
-import { Container, Row, FileTitle, FileType } from './style';
+import { Container, Row, CheckColumn, FileTitle, FileType } from './style';
 
 export function Home() {
   const downloadLinkEl = useRef<HTMLAnchorElement>(null);
@@ -15,6 +15,7 @@ export function Home() {
   const [fileList, setFileList] = useState<file[]>([]);
   const [downloadLink, setDownloadLink] = useState<string>('');
   const [downloadFileName, setDownloadFileName] = useState<string>('');
+  const [checkedFileList, setCheckedFileList] = useState<string[]>([]);
 
   useEffect(() => {
     if (downloadLinkEl.current === null) {
@@ -30,6 +31,15 @@ export function Home() {
 
   const fileFields =
     'kind, id, name, mimeType, description, starred, trashed, webContentLink, webViewLink';
+
+  const handleFileCheck = fileId => {
+    setCheckedFileList(prevList => {
+      if (prevList.includes(fileId)) {
+        return prevList.filter(prev => prev !== fileId);
+      }
+      return [...prevList, fileId];
+    });
+  };
 
   const getFiles = async () => {
     const params = {
@@ -106,6 +116,12 @@ export function Home() {
             ) : (
               fileList.map(file => (
                 <Row key={file.id}>
+                  <CheckColumn>
+                    <input
+                      type="checkbox"
+                      onChange={() => handleFileCheck(file.id)}
+                    />
+                  </CheckColumn>
                   <FileTitle>
                     <span>{file.name}</span>
                   </FileTitle>
