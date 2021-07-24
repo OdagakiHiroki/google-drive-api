@@ -86,4 +86,32 @@ const executeRequest = (requestObject, isRawRes = false): Promise<any> => {
   });
 };
 
-export { loadGapi, gapiInit, createRequest, executeRequest };
+const createBatchRequest = requests => {
+  const batch = window.gapi.client.newBatch();
+  for (let index = 0; index < requests.length; index++) {
+    batch.add(requests[index], { id: index });
+  }
+  return batch;
+};
+
+const executeBatchRequest = batch => {
+  batch.then(
+    success => {
+      console.debug(success);
+      return success;
+    },
+    error => {
+      console.debug(error);
+      return error;
+    },
+  );
+};
+
+export {
+  loadGapi,
+  gapiInit,
+  createRequest,
+  executeRequest,
+  createBatchRequest,
+  executeBatchRequest,
+};

@@ -4,9 +4,15 @@ import {
   mapMimeTypeToExportType,
   toBase64,
 } from 'utils/index';
-import { createRequest, executeRequest } from 'utils/gapi';
+import {
+  createRequest,
+  executeRequest,
+  createBatchRequest,
+  executeBatchRequest,
+} from 'utils/gapi';
 
 const getFilesList = async (params): Promise<resFiles> => {
+  // TODO: requestの作り方をwindow.gapi.client.drive.files.updateのように統一するか検討
   const request = createRequest({
     path: '/drive/v3/files',
     method: 'GET',
@@ -15,7 +21,7 @@ const getFilesList = async (params): Promise<resFiles> => {
   return await executeRequest(request);
 };
 
-const createFile = async fileObj => {
+const uploadFileData = async fileObj => {
   const { name, size, type } = fileObj;
   const params = {
     uploadType: 'multipart',
@@ -34,7 +40,8 @@ const createFile = async fileObj => {
   };
   // TODO: テンプレートリテラルで改行をうまく処理する方法を考える
   // const body = `${delimiter}Content-Type: application/json; charset=UTF-8\n\n${JSON.stringify(metaData)}${delimiter}Content-Type: ${type}\nContent-Transfer-Encoding: base64\n\n${fileData}\n${delimiterEnd}`
-  const body = delimiter +
+  const body =
+    delimiter +
     'Content-Type: application/json; charset=UTF-8\n\n' +
     JSON.stringify(metaData) +
     delimiter +
@@ -91,4 +98,27 @@ const _getFileContent = async (fileId, exportMimeType, params) => {
   return dataUrl;
 };
 
-export { getFilesList, createFile, getDownloadURL };
+const updateFile = async (fileId, body) => {
+  const request = createRequest({
+    path: `/drive/v3/files/${fileId}`,
+    method: 'PATCH',
+    body,
+  });
+  return await executeRequest(request);
+};
+
+const updateMultiFiles = async (fileIds, body) => {
+  const requests = fileIds.map(fileId => {
+    return window.gapi.client.drive.files.update({ fileId, ...body });
+  });
+  const batch = createBatchRequest(requests);
+  return await executeBatchRequest(batch);
+};
+
+export {
+  getFilesList,
+  uploadFileData,
+  getDownloadURL,
+  updateFile,
+  updateMultiFiles,
+};

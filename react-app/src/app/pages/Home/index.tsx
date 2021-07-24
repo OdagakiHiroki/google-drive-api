@@ -4,10 +4,11 @@ import { mapMimeTypeToDispType } from 'utils/index';
 import { file } from 'utils/types/gapi/files';
 import {
   getFilesList,
-  createFile,
+  uploadFileData,
   getDownloadURL,
+  updateMultiFiles,
 } from 'utils/api/drive/files';
-import { Container, Row, FileTitle, FileType } from './style';
+import { Container, Row, CheckColumn, FileTitle, FileType } from './style';
 
 export function Home() {
   const downloadLinkEl = useRef<HTMLAnchorElement>(null);
@@ -15,6 +16,7 @@ export function Home() {
   const [fileList, setFileList] = useState<file[]>([]);
   const [downloadLink, setDownloadLink] = useState<string>('');
   const [downloadFileName, setDownloadFileName] = useState<string>('');
+  const [checkedFileList, setCheckedFileList] = useState<string[]>([]);
 
   useEffect(() => {
     if (downloadLinkEl.current === null) {
@@ -30,6 +32,15 @@ export function Home() {
 
   const fileFields =
     'kind, id, name, mimeType, description, starred, trashed, webContentLink, webViewLink';
+
+  const handleFileCheck = fileId => {
+    setCheckedFileList(prevList => {
+      if (prevList.includes(fileId)) {
+        return prevList.filter(prev => prev !== fileId);
+      }
+      return [...prevList, fileId];
+    });
+  };
 
   const getFiles = async () => {
     const params = {
@@ -61,7 +72,7 @@ export function Home() {
 
   const uploadFile = async e => {
     e.persist();
-    const res = await createFile(e.target.files[0]);
+    const res = await uploadFileData(e.target.files[0]);
     if (res.id) {
       e.target.value = '';
       await getFiles();
@@ -75,6 +86,16 @@ export function Home() {
     const res = await getDownloadURL(file, params);
     setDownloadFileName(file.name);
     setDownloadLink(res);
+  };
+
+  const trashFile = async () => {
+    if (checkedFileList.length === 0) {
+      return;
+    }
+    const body = {
+      trashed: true,
+    };
+    await updateMultiFiles(checkedFileList, body);
   };
 
   return (
@@ -98,6 +119,9 @@ export function Home() {
           />
           <button onClick={() => searchFiles(searchText)}>検索</button>
         </Row>
+        <Row>
+          <button onClick={() => trashFile()}>削除</button>
+        </Row>
         <span>ファイル一覧</span>
         <Row>
           <Container>
@@ -106,6 +130,12 @@ export function Home() {
             ) : (
               fileList.map(file => (
                 <Row key={file.id}>
+                  <CheckColumn>
+                    <input
+                      type="checkbox"
+                      onChange={() => handleFileCheck(file.id)}
+                    />
+                  </CheckColumn>
                   <FileTitle>
                     <span>{file.name}</span>
                   </FileTitle>
