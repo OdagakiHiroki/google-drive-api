@@ -4,6 +4,7 @@ import { mapMimeTypeToDispType } from 'utils/index';
 import { file } from 'utils/types/gapi/files';
 import {
   getFilesList,
+  getFileById,
   uploadFileData,
   getDownloadURL,
   updateMultiFiles,
@@ -34,7 +35,7 @@ export function Home() {
   const downloadLinkEl = useRef<HTMLAnchorElement>(null);
   const [searchText, setSearchText] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState<number>(tabList.myDrive);
-  const [currentFolder, setCurrentFolder] = useState<string>('root');
+  const [currentFolderId, setCurrentFolderId] = useState<string>('root');
   const [baseQuery, setBaseQuery] = useState<string>('');
   const [fileList, setFileList] = useState<file[]>([]);
   const [downloadLink, setDownloadLink] = useState<string>('');
@@ -50,9 +51,9 @@ export function Home() {
 
   useEffect(() => {
     const isTrashed = selectedTab === tabList.trash;
-    const query = `trashed = ${isTrashed} and '${currentFolder}' in parents`;
+    const query = `trashed = ${isTrashed} and '${currentFolderId}' in parents`;
     setBaseQuery(query);
-  }, [selectedTab, currentFolder, tabList]);
+  }, [selectedTab, currentFolderId, tabList]);
 
   useEffect(() => {
     if (downloadLinkEl.current === null) {
@@ -67,7 +68,7 @@ export function Home() {
   }, [downloadLink]);
 
   const fileFields =
-    'kind, id, name, mimeType, description, starred, trashed, webContentLink, webViewLink';
+    'parents, kind, id, name, mimeType, description, starred, trashed, webContentLink, webViewLink';
 
   const handleFileCheck = (e, fileId) => {
     e.stopPropagation();
@@ -83,6 +84,16 @@ export function Home() {
     setSelectedTab(tabValue);
   };
 
+  const handleClickBack = async () => {
+    const params = {
+      fields: fileFields,
+    };
+    const { parents } = await getFileById(currentFolderId, params);
+    if (parents && parents.length > 0) {
+      changeCurrentFolder(parents[0]);
+    }
+  };
+
   const handleFileItemClick = file => {
     const { id, mimeType } = file;
     if (mimeType !== 'application/vnd.google-apps.folder') {
@@ -92,7 +103,7 @@ export function Home() {
   };
 
   const changeCurrentFolder = (folderId: string) => {
-    setCurrentFolder(folderId);
+    setCurrentFolderId(folderId);
   };
 
   const getFiles = async () => {
@@ -195,6 +206,9 @@ export function Home() {
           </Tab>
         </Row>
         <span>ファイル一覧</span>
+        <Row>
+          <button onClick={() => handleClickBack()}>←戻る</button>
+        </Row>
         <Row>
           <Container>
             {fileList.length === 0 ? (
