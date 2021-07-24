@@ -30,6 +30,10 @@ export function Home() {
   const [checkedFileList, setCheckedFileList] = useState<string[]>([]);
 
   useEffect(() => {
+    getFiles(selectedTab);
+  }, [selectedTab]);
+
+  useEffect(() => {
     if (downloadLinkEl.current === null) {
       return;
     }
@@ -57,9 +61,11 @@ export function Home() {
     setSelectedTab(tabValue);
   };
 
-  const getFiles = async () => {
+  const getFiles = async (tabValue: number) => {
+    const isTrashed = tabValue === tabList.trash;
     const params = {
       fields: `kind, nextPageToken, files(${fileFields})`,
+      q: `trashed = ${isTrashed}`,
     };
     const { files, error } = await getFilesList(params);
     if (error) {
@@ -90,7 +96,7 @@ export function Home() {
     const res = await uploadFileData(e.target.files[0]);
     if (res.id) {
       e.target.value = '';
-      await getFiles();
+      await getFiles(selectedTab);
     }
   };
 
@@ -122,7 +128,7 @@ export function Home() {
       <Container>
         <span>HOME</span>
         <Row>
-          <button onClick={() => getFiles()}>全ファイル取得</button>
+          <button onClick={() => getFiles(selectedTab)}>全ファイル取得</button>
           <input type="file" onChange={e => uploadFile(e)} />
         </Row>
         <span>ファイル検索</span>
