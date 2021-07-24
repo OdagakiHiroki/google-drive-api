@@ -43,7 +43,6 @@ const mimeTypeMap = {
 const useExportMethodMimeTypeList = [
   'application/vnd.google-apps.document',
   'application/vnd.google-apps.spreadsheet',
-  'application/vnd.google-apps.folder',
 ];
 
 const mapMimeTypeToDispType = mimeType => {

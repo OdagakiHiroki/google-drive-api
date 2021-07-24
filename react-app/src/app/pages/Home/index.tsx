@@ -69,7 +69,8 @@ export function Home() {
   const fileFields =
     'kind, id, name, mimeType, description, starred, trashed, webContentLink, webViewLink';
 
-  const handleFileCheck = fileId => {
+  const handleFileCheck = (e, fileId) => {
+    e.stopPropagation();
     setCheckedFileList(prevList => {
       if (prevList.includes(fileId)) {
         return prevList.filter(prev => prev !== fileId);
@@ -80,6 +81,14 @@ export function Home() {
 
   const handleTabClick = (tabValue: number) => {
     setSelectedTab(tabValue);
+  };
+
+  const handleFileItemClick = file => {
+    const { id, mimeType } = file;
+    if (mimeType !== 'application/vnd.google-apps.folder') {
+      return;
+    }
+    changeCurrentFolder(id);
   };
 
   const changeCurrentFolder = (folderId: string) => {
@@ -93,7 +102,6 @@ export function Home() {
       q: baseQuery,
     };
     const { files, error } = await getFilesList(params);
-    console.debug(files);
     if (error) {
       console.debug('ファイル取得失敗');
     }
@@ -127,7 +135,8 @@ export function Home() {
     }
   };
 
-  const downloadFile = async file => {
+  const downloadFile = async (e, file) => {
+    e.stopPropagation();
     const params = {
       fields: fileFields,
     };
@@ -192,11 +201,11 @@ export function Home() {
               <span>ファイルがありません</span>
             ) : (
               fileList.map(file => (
-                <Row key={file.id}>
+                <Row key={file.id} onClick={() => handleFileItemClick(file)}>
                   <CheckColumn>
                     <CheckBox
                       isActive={checkedFileList.includes(file.id)}
-                      onClick={() => handleFileCheck(file.id)}
+                      onClick={e => handleFileCheck(e, file.id)}
                     >
                       ✔︎
                     </CheckBox>
@@ -207,7 +216,7 @@ export function Home() {
                   <FileType>
                     <span>{mapMimeTypeToDispType(file.mimeType)}</span>
                   </FileType>
-                  <button onClick={() => downloadFile(file)}>DL</button>
+                  <button onClick={e => downloadFile(e, file)}>DL</button>
                 </Row>
               ))
             )}
