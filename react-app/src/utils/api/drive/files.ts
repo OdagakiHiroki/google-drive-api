@@ -4,9 +4,15 @@ import {
   mapMimeTypeToExportType,
   toBase64,
 } from 'utils/index';
-import { createRequest, executeRequest } from 'utils/gapi';
+import {
+  createRequest,
+  executeRequest,
+  createBatchRequest,
+  executeBatchRequest,
+} from 'utils/gapi';
 
 const getFilesList = async (params): Promise<resFiles> => {
+  // TODO: requestの作り方をwindow.gapi.client.drive.files.updateのように統一するか検討
   const request = createRequest({
     path: '/drive/v3/files',
     method: 'GET',
@@ -100,4 +106,18 @@ const updateFile = async (fileId, body) => {
   return await executeRequest(request);
 };
 
-export { getFilesList, uploadFileData, getDownloadURL, updateFile };
+const updateMultiFiles = async (fileIds, body) => {
+  const requests = fileIds.map(fileId => {
+    return window.gapi.client.drive.files.update({ fileId, ...body });
+  });
+  const batch = createBatchRequest(requests);
+  return await executeBatchRequest(batch);
+};
+
+export {
+  getFilesList,
+  uploadFileData,
+  getDownloadURL,
+  updateFile,
+  updateMultiFiles,
+};

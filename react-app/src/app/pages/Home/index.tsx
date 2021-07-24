@@ -6,7 +6,7 @@ import {
   getFilesList,
   uploadFileData,
   getDownloadURL,
-  updateFile,
+  updateMultiFiles,
 } from 'utils/api/drive/files';
 import { Container, Row, CheckColumn, FileTitle, FileType } from './style';
 
@@ -92,12 +92,10 @@ export function Home() {
     if (checkedFileList.length === 0) {
       return;
     }
-    const fileId = checkedFileList[0];
     const body = {
       trashed: true,
     };
-    const res = await updateFile(fileId, body);
-    console.debug(res);
+    await updateMultiFiles(checkedFileList, body);
   };
 
   return (
