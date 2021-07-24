@@ -60,8 +60,27 @@ const mapMimeTypeToExportType = mimeType => {
   return mimeTypeMap[mimeType].exportMimeType;
 };
 
+const toBase64 = (file): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+};
+
+// const toBinaryString = (file): Promise<any> => {
+//   return new Promise((resolve, reject) => {
+//     const reader = new FileReader();
+//     reader.readAsBinaryString(file);
+//     reader.onload = () => resolve(reader.result);
+//     reader.onerror = error => reject(error);
+//   });
+// };
+
 export {
   useExportMethodMimeTypeList,
   mapMimeTypeToDispType,
   mapMimeTypeToExportType,
+  toBase64,
 };
