@@ -15,7 +15,7 @@ const getFilesList = async (params): Promise<resFiles> => {
   return await executeRequest(request);
 };
 
-const createFile = async fileObj => {
+const uploadFileData = async fileObj => {
   const { name, size, type } = fileObj;
   const params = {
     uploadType: 'multipart',
@@ -91,4 +91,4 @@ const _getFileContent = async (fileId, exportMimeType, params) => {
   return dataUrl;
 };
 
-export { getFilesList, createFile, getDownloadURL };
+export { getFilesList, uploadFileData, getDownloadURL };
