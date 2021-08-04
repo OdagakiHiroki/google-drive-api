@@ -1,13 +1,21 @@
 import styled from 'styled-components';
 
+const disabled = `
+  background-color: #8c8c8c;
+  pointer-events: none;
+`;
+
 const Container = styled.div`
   display: flex;
   flex-direction: column;
 `;
 
-const Row = styled.div`
+const Row = styled.div<{ disabled?: boolean }>`
   display: flex;
   width: 100%;
+  ${props => props.disabled &&`
+    ${disabled}
+  `}
 `;
 
 const StatefulButton = styled.button<{ isActive?: boolean }>`
@@ -39,7 +47,7 @@ const CheckColumn = styled(Column)`
   flex: 0 0 80px;
 `;
 
-const CheckBox = styled.div<{ isActive?: boolean }>`
+const CheckBox = styled.div<{ isActive?: boolean; disabled?: boolean }>`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -54,6 +62,9 @@ const CheckBox = styled.div<{ isActive?: boolean }>`
   ${props => props.isActive &&`
     color: #ffffff;
     background-color: #008bff;
+  `}
+  ${props => props.disabled &&`
+    ${disabled}
   `}
 `;
 

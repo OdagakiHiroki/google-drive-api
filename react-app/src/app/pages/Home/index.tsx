@@ -101,6 +101,9 @@ export function Home() {
 
   const handleFileCheck = (e, fileId) => {
     e.stopPropagation();
+    if (operationState === operationStateList.move) {
+      return;
+    }
     setCheckedFileList(prevList => {
       if (prevList.includes(fileId)) {
         return prevList.filter(prev => prev !== fileId);
@@ -139,6 +142,13 @@ export function Home() {
     setCurrentFolderId(folderId);
   };
 
+  const isDisabledFileRow = (operationState, mimeType) => {
+    return (
+      operationState === operationStateList.move &&
+      mimeType !== 'application/vnd.google-apps.folder'
+    );
+  };
+
   const getFolder = async folderId => {
     if (folderId === '') {
       return null;
@@ -150,7 +160,9 @@ export function Home() {
   };
 
   const getFiles = async () => {
-    setCheckedFileList([]);
+    if (operationState === operationStateList.normal) {
+      setCheckedFileList([]);
+    }
     const params = {
       fields: `kind, nextPageToken, files(${fileFields})`,
       q: baseQuery,
@@ -165,7 +177,9 @@ export function Home() {
   };
 
   const searchFiles = async (text: string) => {
-    setCheckedFileList([]);
+    if (operationState === operationStateList.normal) {
+      setCheckedFileList([]);
+    }
     const query = `${baseQuery} and name contains '${text}'`;
     const params = {
       fields: `kind, nextPageToken, files(${fileFields})`,
@@ -236,7 +250,7 @@ export function Home() {
             isActive={operationState === operationStateList.move}
             onClick={() => handleMoveClick()}
           >
-            移動
+            {operationState === operationStateList.move ? 'ここに移動する' :'移動'}
           </StatefulButton>
         </Row>
         <Row>
@@ -249,12 +263,14 @@ export function Home() {
           >
             マイドライブ
           </Tab>
-          <Tab
-            isActive={selectedTab === tabList.trash}
-            onClick={() => handleTabClick(tabList.trash)}
-          >
-            ゴミ箱
-          </Tab>
+          {operationState === operationStateList.normal && (
+            <Tab
+              isActive={selectedTab === tabList.trash}
+              onClick={() => handleTabClick(tabList.trash)}
+            >
+              ゴミ箱
+            </Tab>
+          )}
         </Row>
         <span>ファイル一覧</span>
         {parentFolderId && (
@@ -268,7 +284,11 @@ export function Home() {
               <span>ファイルがありません</span>
             ) : (
               fileList.map(file => (
-                <Row key={file.id} onClick={() => handleFileItemClick(file)}>
+                <Row
+                  key={file.id}
+                  disabled={isDisabledFileRow(operationState, file.mimeType)}
+                  onClick={() => handleFileItemClick(file)}
+                >
                   <CheckColumn>
                     <CheckBox
                       isActive={checkedFileList.includes(file.id)}
