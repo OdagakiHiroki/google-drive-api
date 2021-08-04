@@ -96,6 +96,7 @@ export function Home() {
   };
 
   const handleTabClick = (tabValue: number) => {
+    setCurrentFolderId('root');
     setSelectedTab(tabValue);
   };
 
