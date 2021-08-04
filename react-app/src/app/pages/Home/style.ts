@@ -10,15 +10,18 @@ const Row = styled.div`
   width: 100%;
 `;
 
-const Tab = styled.div<{ isActive?: boolean }>`
+const StatefulButton = styled.button<{ isActive?: boolean }>`
   background-color: #f4fdff;
   border: 1px solid #0090a6;
-  & + & {
-    border-left: none;
-  }
   ${props => props.isActive &&`
     background-color: #bdf7ff;
   `}
+`;
+
+const Tab = styled(StatefulButton)`
+  & + & {
+    border-left: none;
+  }
 `;
 
 const Column = styled.div`
@@ -66,6 +69,7 @@ const FileType = styled(Column)`
 export {
   Container,
   Row,
+  StatefulButton,
   Tab,
   Column,
   CheckColumn,

@@ -12,6 +12,7 @@ import {
 import {
   Container,
   Row,
+  StatefulButton,
   Tab,
   CheckColumn,
   CheckBox,
@@ -24,6 +25,11 @@ type tabs = {
   trash: number;
 };
 
+type operationStateTypes = {
+  normal: number;
+  move: number;
+};
+
 export function Home() {
   const tabList: tabs = useMemo(() => {
     return {
@@ -32,7 +38,15 @@ export function Home() {
     };
   }, []);
 
+  const operationStateList: operationStateTypes = useMemo(() => {
+    return {
+      normal: 0,
+      move: 1,
+    }
+  }, []);
+
   const downloadLinkEl = useRef<HTMLAnchorElement>(null);
+  const [operationState, setOperationState] = useState(operationStateList.normal);
   const [searchText, setSearchText] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState<number>(tabList.myDrive);
   const [currentFolderId, setCurrentFolderId] = useState<string | undefined>('root');
@@ -93,6 +107,14 @@ export function Home() {
       }
       return [...prevList, fileId];
     });
+  };
+
+  const handleMoveClick = () => {
+    if (operationState === operationStateList.normal) {
+      setOperationState(operationStateList.move);
+      return;
+    }
+    return setOperationState(operationStateList.normal);
   };
 
   const handleTabClick = (tabValue: number) => {
@@ -208,6 +230,14 @@ export function Home() {
             onChange={e => setSearchText(e.currentTarget.value)}
           />
           <button onClick={() => searchFiles(searchText)}>検索</button>
+        </Row>
+        <Row>
+          <StatefulButton
+            isActive={operationState === operationStateList.move}
+            onClick={() => handleMoveClick()}
+          >
+            移動
+          </StatefulButton>
         </Row>
         <Row>
           <button onClick={() => trashFile()}>削除</button>
