@@ -21,6 +21,15 @@ const getFilesList = async (params): Promise<resFiles> => {
   return await executeRequest(request);
 };
 
+const getFileById = async (fileId, params) => {
+  const request = createRequest({
+    path: `/drive/v3/files/${fileId}`,
+    method: 'GET',
+    params,
+  });
+  return await executeRequest(request);
+};
+
 const uploadFileData = async fileObj => {
   const { name, size, type } = fileObj;
   const params = {
@@ -67,11 +76,11 @@ const getDownloadURL = async (fileObj, params) => {
     const exportMimeType = mapMimeTypeToExportType(mimeType);
     return await _getFileContent(fileId, exportMimeType, params);
   }
-  return await _getFileById(fileId, params);
+  return await _getFileContentLinkById(fileId, params);
 };
 
 // NOTE: 通常用
-const _getFileById = async (fileId, params) => {
+const _getFileContentLinkById = async (fileId, params) => {
   const request = createRequest({
     path: `/drive/v3/files/${fileId}`,
     method: 'GET',
@@ -117,6 +126,7 @@ const updateMultiFiles = async (fileIds, body) => {
 
 export {
   getFilesList,
+  getFileById,
   uploadFileData,
   getDownloadURL,
   updateFile,

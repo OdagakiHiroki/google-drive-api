@@ -13,7 +13,7 @@ const Row = styled.div`
 const Tab = styled.div<{ isActive?: boolean }>`
   background-color: #f4fdff;
   border: 1px solid #0090a6;
-  & + &{
+  & + & {
     border-left: none;
   }
   ${props => props.isActive &&`
