@@ -35,8 +35,8 @@ export function Home() {
   const downloadLinkEl = useRef<HTMLAnchorElement>(null);
   const [searchText, setSearchText] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState<number>(tabList.myDrive);
-  const [currentFolderId, setCurrentFolderId] = useState<string>('root');
-  const [parentFolderId, setParentFolderId] = useState<string>('');
+  const [currentFolderId, setCurrentFolderId] = useState<string | undefined>('root');
+  const [parentFolderId, setParentFolderId] = useState<string | undefined>('');
   const [baseQuery, setBaseQuery] = useState<string>('');
   const [fileList, setFileList] = useState<file[]>([]);
   const [downloadLink, setDownloadLink] = useState<string>('');
@@ -53,11 +53,11 @@ export function Home() {
   useEffect(() => {
     let unmounted = false;
     (async () => {
-      const currentFolder = await getFolder(currentFolderId);
+      const { parents } = await getFolder(currentFolderId);
       if (unmounted) {
         return;
       }
-      setParentFolderId(currentFolder?.parents?.[0]);
+      setParentFolderId(parents?.[0]);
     })();
     return () => {
       unmounted = true;
@@ -100,13 +100,8 @@ export function Home() {
   };
 
   const handleClickBack = async () => {
-    const params = {
-      fields: fileFields,
-    };
-    const { parents } = await getFileById(currentFolderId, params);
-    if (parents && parents.length > 0) {
-      changeCurrentFolder(parents[0]);
-    }
+    const { parents } = await getFolder(currentFolderId);
+    changeCurrentFolder(parents?.[0]);
   };
 
   const handleFileItemClick = file => {
