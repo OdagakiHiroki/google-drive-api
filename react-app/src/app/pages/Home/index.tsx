@@ -36,6 +36,7 @@ export function Home() {
   const [searchText, setSearchText] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState<number>(tabList.myDrive);
   const [currentFolderId, setCurrentFolderId] = useState<string>('root');
+  const [parentFolderId, setParentFolderId] = useState<string>('');
   const [baseQuery, setBaseQuery] = useState<string>('');
   const [fileList, setFileList] = useState<file[]>([]);
   const [downloadLink, setDownloadLink] = useState<string>('');
@@ -48,6 +49,20 @@ export function Home() {
     }
     getFiles();
   }, [baseQuery]);
+
+  useEffect(() => {
+    let unmounted = false;
+    (async () => {
+      const currentFolder = await getFolder(currentFolderId);
+      if (unmounted) {
+        return;
+      }
+      setParentFolderId(currentFolder?.parents?.[0]);
+    })();
+    return () => {
+      unmounted = true;
+    };
+  }, [currentFolderId]);
 
   useEffect(() => {
     const isTrashed = selectedTab === tabList.trash;
@@ -104,6 +119,16 @@ export function Home() {
 
   const changeCurrentFolder = (folderId: string) => {
     setCurrentFolderId(folderId);
+  };
+
+  const getFolder = async folderId => {
+    if (folderId === '') {
+      return null;
+    }
+    const params = {
+      fields: fileFields,
+    };
+    return await getFileById(folderId, params);
   };
 
   const getFiles = async () => {
@@ -206,9 +231,11 @@ export function Home() {
           </Tab>
         </Row>
         <span>ファイル一覧</span>
-        <Row>
-          <button onClick={() => handleClickBack()}>←戻る</button>
-        </Row>
+        {parentFolderId && (
+          <Row>
+            <button onClick={() => handleClickBack()}>←戻る</button>
+          </Row>
+        )}
         <Row>
           <Container>
             {fileList.length === 0 ? (
