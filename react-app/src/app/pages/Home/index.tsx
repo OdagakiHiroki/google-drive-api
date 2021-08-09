@@ -120,6 +120,10 @@ export function Home() {
     setOperationState(operationStateList.normal);
   };
 
+  const handleCancelMoveClick = () => {
+    setOperationState(operationStateList.normal);
+  };
+
   const handleTabClick = (tabValue: number) => {
     setCurrentFolderId('root');
     setSelectedTab(tabValue);
@@ -258,12 +262,19 @@ export function Home() {
           <button onClick={() => searchFiles(searchText)}>検索</button>
         </Row>
         <Row>
-          <StatefulButton
-            isActive={operationState === operationStateList.move}
-            onClick={() => handleMoveClick()}
-          >
-            {operationState === operationStateList.move ? 'ここに移動する' : '移動'}
-          </StatefulButton>
+          {selectedTab !== tabList.trash && (
+            <StatefulButton
+              isActive={operationState === operationStateList.move}
+              onClick={() => handleMoveClick()}
+            >
+              {operationState === operationStateList.move ? 'ここに移動する' : '移動'}
+            </StatefulButton>
+          )}
+          {operationState === operationStateList.move && (
+            <button onClick={() => handleCancelMoveClick()}>
+              移動キャンセル
+            </button>
+          )}
         </Row>
         <Row>
           <button onClick={() => trashFile()}>削除</button>
