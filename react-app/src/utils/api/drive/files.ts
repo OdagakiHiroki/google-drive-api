@@ -108,17 +108,29 @@ const _getFileContent = async (fileId, exportMimeType, params) => {
 };
 
 const updateFile = async (fileId, body) => {
-  const request = createRequest({
-    path: `/drive/v3/files/${fileId}`,
-    method: 'PATCH',
-    body,
+  const request = window.gapi.client.drive.files.update({
+    fileId,
+    ...body,
   });
   return await executeRequest(request);
 };
 
-const updateMultiFiles = async (fileIds, body) => {
-  const requests = fileIds.map(fileId => {
-    return window.gapi.client.drive.files.update({ fileId, ...body });
+const updateMultiFiles = async (fileList, body) => {
+  const requests = fileList.map(file => {
+    return window.gapi.client.drive.files.update({ fileId: file.id, ...body });
+  });
+  const batch = createBatchRequest(requests);
+  return await executeBatchRequest(batch);
+};
+
+const moveMultiFiles = async (fileList, body) => {
+  const requests = fileList.map(file => {
+    const removeParents = file.parents.join(',');
+    return window.gapi.client.drive.files.update({
+      fileId: file.id,
+      ...body,
+      removeParents,
+    });
   });
   const batch = createBatchRequest(requests);
   return await executeBatchRequest(batch);
@@ -131,4 +143,5 @@ export {
   getDownloadURL,
   updateFile,
   updateMultiFiles,
+  moveMultiFiles,
 };

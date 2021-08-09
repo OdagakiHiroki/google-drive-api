@@ -8,6 +8,7 @@ import {
   uploadFileData,
   getDownloadURL,
   updateMultiFiles,
+  moveMultiFiles,
 } from 'utils/api/drive/files';
 import {
   Container,
@@ -42,7 +43,7 @@ export function Home() {
     return {
       normal: 0,
       move: 1,
-    }
+    };
   }, []);
 
   const downloadLinkEl = useRef<HTMLAnchorElement>(null);
@@ -101,9 +102,6 @@ export function Home() {
 
   const handleFileCheck = (e, file) => {
     e.stopPropagation();
-    if (operationState === operationStateList.move) {
-      return;
-    }
     setCheckedFileList(prevList => {
       const existFile = prevList.find(prev => prev.id === file.id);
       if (existFile) {
@@ -113,12 +111,13 @@ export function Home() {
     });
   };
 
-  const handleMoveClick = () => {
+  const handleMoveClick = async () => {
     if (operationState === operationStateList.normal) {
       setOperationState(operationStateList.move);
       return;
     }
-    return setOperationState(operationStateList.normal);
+    await moveFile(checkedFileList);
+    setOperationState(operationStateList.normal);
   };
 
   const handleTabClick = (tabValue: number) => {
@@ -212,6 +211,18 @@ export function Home() {
     const res = await getDownloadURL(file, params);
     setDownloadFileName(file.name);
     setDownloadLink(res);
+  };
+
+  const moveFile = async fileList => {
+    if (fileList.length === 0) {
+      return;
+    }
+    const body = {
+      addParents: currentFolderId,
+    };
+    await moveMultiFiles(fileList, body);
+    setCheckedFileList([]);
+    await getFiles();
   };
 
   const trashFile = async () => {

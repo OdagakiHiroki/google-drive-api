@@ -56,6 +56,8 @@ const CheckBox = styled.div<{ isActive?: boolean; disabled?: boolean }>`
   background-color: #ffffff;
   border: 1px solid #005196;
   border-radius: 8px;
+  pointer-events: auto;
+  cursor: pointer;
   & + & {
     border-left: none;
   }
