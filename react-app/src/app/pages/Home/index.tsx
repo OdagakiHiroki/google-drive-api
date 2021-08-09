@@ -55,7 +55,7 @@ export function Home() {
   const [fileList, setFileList] = useState<file[]>([]);
   const [downloadLink, setDownloadLink] = useState<string>('');
   const [downloadFileName, setDownloadFileName] = useState<string>('');
-  const [checkedFileList, setCheckedFileList] = useState<string[]>([]);
+  const [checkedFileList, setCheckedFileList] = useState<file[]>([]);
 
   useEffect(() => {
     if (baseQuery === '') {
@@ -99,16 +99,17 @@ export function Home() {
   const fileFields =
     'parents, kind, id, name, mimeType, description, starred, trashed, webContentLink, webViewLink';
 
-  const handleFileCheck = (e, fileId) => {
+  const handleFileCheck = (e, file) => {
     e.stopPropagation();
     if (operationState === operationStateList.move) {
       return;
     }
     setCheckedFileList(prevList => {
-      if (prevList.includes(fileId)) {
-        return prevList.filter(prev => prev !== fileId);
+      const existFile = prevList.find(prev => prev.id === file.id);
+      if (existFile) {
+        return prevList.filter(prev => prev.id !== file.id);
       }
-      return [...prevList, fileId];
+      return [...prevList, file];
     });
   };
 
@@ -250,7 +251,7 @@ export function Home() {
             isActive={operationState === operationStateList.move}
             onClick={() => handleMoveClick()}
           >
-            {operationState === operationStateList.move ? 'ここに移動する' :'移動'}
+            {operationState === operationStateList.move ? 'ここに移動する' : '移動'}
           </StatefulButton>
         </Row>
         <Row>
@@ -291,8 +292,12 @@ export function Home() {
                 >
                   <CheckColumn>
                     <CheckBox
-                      isActive={checkedFileList.includes(file.id)}
-                      onClick={e => handleFileCheck(e, file.id)}
+                      isActive={
+                        checkedFileList.findIndex(
+                          checkedFile => checkedFile.id === file.id,
+                        ) !== -1
+                      }
+                      onClick={e => handleFileCheck(e, file)}
                     >
                       ✔︎
                     </CheckBox>
