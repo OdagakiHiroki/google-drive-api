@@ -1,24 +1,35 @@
 import styled from 'styled-components';
 
+const disabled = `
+  background-color: #8c8c8c;
+  pointer-events: none;
+`;
+
 const Container = styled.div`
   display: flex;
   flex-direction: column;
 `;
 
-const Row = styled.div`
+const Row = styled.div<{ disabled?: boolean }>`
   display: flex;
   width: 100%;
+  ${props => props.disabled &&`
+    ${disabled}
+  `}
 `;
 
-const Tab = styled.div<{ isActive?: boolean }>`
+const StatefulButton = styled.button<{ isActive?: boolean }>`
   background-color: #f4fdff;
   border: 1px solid #0090a6;
-  & + & {
-    border-left: none;
-  }
   ${props => props.isActive &&`
     background-color: #bdf7ff;
   `}
+`;
+
+const Tab = styled(StatefulButton)`
+  & + & {
+    border-left: none;
+  }
 `;
 
 const Column = styled.div`
@@ -36,7 +47,7 @@ const CheckColumn = styled(Column)`
   flex: 0 0 80px;
 `;
 
-const CheckBox = styled.div<{ isActive?: boolean }>`
+const CheckBox = styled.div<{ isActive?: boolean; disabled?: boolean }>`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -45,12 +56,17 @@ const CheckBox = styled.div<{ isActive?: boolean }>`
   background-color: #ffffff;
   border: 1px solid #005196;
   border-radius: 8px;
+  pointer-events: auto;
+  cursor: pointer;
   & + & {
     border-left: none;
   }
   ${props => props.isActive &&`
     color: #ffffff;
     background-color: #008bff;
+  `}
+  ${props => props.disabled &&`
+    ${disabled}
   `}
 `;
 
@@ -66,6 +82,7 @@ const FileType = styled(Column)`
 export {
   Container,
   Row,
+  StatefulButton,
   Tab,
   Column,
   CheckColumn,

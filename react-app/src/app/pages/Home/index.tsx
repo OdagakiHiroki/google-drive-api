@@ -8,10 +8,12 @@ import {
   uploadFileData,
   getDownloadURL,
   updateMultiFiles,
+  moveMultiFiles,
 } from 'utils/api/drive/files';
 import {
   Container,
   Row,
+  StatefulButton,
   Tab,
   CheckColumn,
   CheckBox,
@@ -24,6 +26,11 @@ type tabs = {
   trash: number;
 };
 
+type operationStateTypes = {
+  normal: number;
+  move: number;
+};
+
 export function Home() {
   const tabList: tabs = useMemo(() => {
     return {
@@ -32,7 +39,15 @@ export function Home() {
     };
   }, []);
 
+  const operationStateList: operationStateTypes = useMemo(() => {
+    return {
+      normal: 0,
+      move: 1,
+    };
+  }, []);
+
   const downloadLinkEl = useRef<HTMLAnchorElement>(null);
+  const [operationState, setOperationState] = useState(operationStateList.normal);
   const [searchText, setSearchText] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState<number>(tabList.myDrive);
   const [currentFolderId, setCurrentFolderId] = useState<string | undefined>('root');
@@ -41,7 +56,7 @@ export function Home() {
   const [fileList, setFileList] = useState<file[]>([]);
   const [downloadLink, setDownloadLink] = useState<string>('');
   const [downloadFileName, setDownloadFileName] = useState<string>('');
-  const [checkedFileList, setCheckedFileList] = useState<string[]>([]);
+  const [checkedFileList, setCheckedFileList] = useState<file[]>([]);
 
   useEffect(() => {
     if (baseQuery === '') {
@@ -85,14 +100,28 @@ export function Home() {
   const fileFields =
     'parents, kind, id, name, mimeType, description, starred, trashed, webContentLink, webViewLink';
 
-  const handleFileCheck = (e, fileId) => {
+  const handleFileCheck = (e, file) => {
     e.stopPropagation();
     setCheckedFileList(prevList => {
-      if (prevList.includes(fileId)) {
-        return prevList.filter(prev => prev !== fileId);
+      const existFile = prevList.find(prev => prev.id === file.id);
+      if (existFile) {
+        return prevList.filter(prev => prev.id !== file.id);
       }
-      return [...prevList, fileId];
+      return [...prevList, file];
     });
+  };
+
+  const handleMoveClick = async () => {
+    if (operationState === operationStateList.normal) {
+      setOperationState(operationStateList.move);
+      return;
+    }
+    await moveFile(checkedFileList);
+    setOperationState(operationStateList.normal);
+  };
+
+  const handleCancelMoveClick = () => {
+    setOperationState(operationStateList.normal);
   };
 
   const handleTabClick = (tabValue: number) => {
@@ -117,6 +146,13 @@ export function Home() {
     setCurrentFolderId(folderId);
   };
 
+  const isDisabledFileRow = (operationState, mimeType) => {
+    return (
+      operationState === operationStateList.move &&
+      mimeType !== 'application/vnd.google-apps.folder'
+    );
+  };
+
   const getFolder = async folderId => {
     if (folderId === '') {
       return null;
@@ -128,7 +164,9 @@ export function Home() {
   };
 
   const getFiles = async () => {
-    setCheckedFileList([]);
+    if (operationState === operationStateList.normal) {
+      setCheckedFileList([]);
+    }
     const params = {
       fields: `kind, nextPageToken, files(${fileFields})`,
       q: baseQuery,
@@ -143,7 +181,9 @@ export function Home() {
   };
 
   const searchFiles = async (text: string) => {
-    setCheckedFileList([]);
+    if (operationState === operationStateList.normal) {
+      setCheckedFileList([]);
+    }
     const query = `${baseQuery} and name contains '${text}'`;
     const params = {
       fields: `kind, nextPageToken, files(${fileFields})`,
@@ -175,6 +215,18 @@ export function Home() {
     const res = await getDownloadURL(file, params);
     setDownloadFileName(file.name);
     setDownloadLink(res);
+  };
+
+  const moveFile = async fileList => {
+    if (fileList.length === 0) {
+      return;
+    }
+    const body = {
+      addParents: currentFolderId,
+    };
+    await moveMultiFiles(fileList, body);
+    setCheckedFileList([]);
+    await getFiles();
   };
 
   const trashFile = async () => {
@@ -210,6 +262,21 @@ export function Home() {
           <button onClick={() => searchFiles(searchText)}>検索</button>
         </Row>
         <Row>
+          {selectedTab !== tabList.trash && (
+            <StatefulButton
+              isActive={operationState === operationStateList.move}
+              onClick={() => handleMoveClick()}
+            >
+              {operationState === operationStateList.move ? 'ここに移動する' : '移動'}
+            </StatefulButton>
+          )}
+          {operationState === operationStateList.move && (
+            <button onClick={() => handleCancelMoveClick()}>
+              移動キャンセル
+            </button>
+          )}
+        </Row>
+        <Row>
           <button onClick={() => trashFile()}>削除</button>
         </Row>
         <Row>
@@ -219,12 +286,14 @@ export function Home() {
           >
             マイドライブ
           </Tab>
-          <Tab
-            isActive={selectedTab === tabList.trash}
-            onClick={() => handleTabClick(tabList.trash)}
-          >
-            ゴミ箱
-          </Tab>
+          {operationState === operationStateList.normal && (
+            <Tab
+              isActive={selectedTab === tabList.trash}
+              onClick={() => handleTabClick(tabList.trash)}
+            >
+              ゴミ箱
+            </Tab>
+          )}
         </Row>
         <span>ファイル一覧</span>
         {parentFolderId && (
@@ -238,11 +307,19 @@ export function Home() {
               <span>ファイルがありません</span>
             ) : (
               fileList.map(file => (
-                <Row key={file.id} onClick={() => handleFileItemClick(file)}>
+                <Row
+                  key={file.id}
+                  disabled={isDisabledFileRow(operationState, file.mimeType)}
+                  onClick={() => handleFileItemClick(file)}
+                >
                   <CheckColumn>
                     <CheckBox
-                      isActive={checkedFileList.includes(file.id)}
-                      onClick={e => handleFileCheck(e, file.id)}
+                      isActive={
+                        checkedFileList.findIndex(
+                          checkedFile => checkedFile.id === file.id,
+                        ) !== -1
+                      }
+                      onClick={e => handleFileCheck(e, file)}
                     >
                       ✔︎
                     </CheckBox>
