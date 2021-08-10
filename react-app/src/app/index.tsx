@@ -12,8 +12,8 @@ import { Switch, BrowserRouter } from 'react-router-dom';
 
 import { GlobalStyle } from 'styles/global-styles';
 
-import { Login } from './pages/Login/Loadable';
-import { Home } from './pages/Home/Loadable';
+import { Login } from './components/pages/Login/Loadable';
+import { Home } from './components/pages/Home/Loadable';
 import { NotFoundPage } from './components/NotFoundPage/Loadable';
 import { useTranslation } from 'react-i18next';
 
